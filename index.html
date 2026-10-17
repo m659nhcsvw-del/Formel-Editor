@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e0f12">
+<title>Formeleditor und Funktionen-Explorer</title>
+<link rel="apple-touch-icon" href="formeleditor/icon-180.png">
+<style>
+:root { --bg: #0e0f12; --panel: #17181d; --linie: #2c2e36; --text: #ececec; --dim: #9a9ca6; --akzent: #58C4DD; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
+main { max-width: 880px; margin: 0 auto; padding: 32px 16px 48px; }
+h1 { font-size: 26px; margin: 0 0 6px; } h1 span { color: var(--akzent); }
+p.unter { color: var(--dim); margin: 0 0 26px; }
+.kacheln { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+a.kachel { display: flex; gap: 16px; align-items: center; padding: 18px; border: 1px solid var(--linie); border-radius: 16px; background: var(--panel); color: inherit; text-decoration: none; }
+a.kachel:hover { border-color: var(--akzent); }
+a.kachel img { width: 72px; height: 72px; border-radius: 16px; flex: none; }
+a.kachel b { font-size: 17px; display: block; } a.kachel small { color: var(--dim); }
+h2 { font-size: 16px; margin: 32px 0 8px; }
+ol, ul { padding-left: 20px; color: var(--dim); } li { margin: 4px 0; } li b { color: var(--text); }
+footer { margin-top: 32px; color: var(--dim); font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Formel<span>editor</span> &amp; Funktionen-Explorer</h1>
+  <p class="unter">Für Pages, Keynote und Numbers auf iPad und Mac – Version 1.1.0</p>
+  <div class="kacheln">
+    <a class="kachel" href="formeleditor/"><img src="formeleditor/icon-180.png" alt=""><span><b>Formeleditor</b><small>Formeln setzen und mit SymPy, NumPy, SciPy berechnen; als Gleichung nach iWork</small></span></a>
+    <a class="kachel" href="explorer/"><img src="explorer/icon-180.png" alt=""><span><b>Funktionen-Explorer</b><small>Graphen, Nullstellen, Extrema, Wendestellen, Integrale; als Bild nach iWork</small></span></a>
+  </div>
+  <h2>Auf den Home-Bildschirm (iPad)</h2>
+  <ol><li>Programm oben antippen.</li><li>In Safari <b>Teilen</b> (□↑) → <b>Zum Home-Bildschirm</b> → <b>Hinzufügen</b>.</li>
+  <li>Einmal mit Internet öffnen und warten, bis oben „Python … SymPy …“ steht – danach geht es auch offline.</li></ol>
+  <h2>In Pages, Keynote, Numbers</h2>
+  <ul><li><b>Formel:</b> „⧉ Für Pages/Keynote/Numbers“ → in iWork <b>Einfügen → Gleichung</b> (iPad: <b>+ → Form…/Gleichung</b>) → einsetzen → <b>Einfügen</b>.</li>
+  <li><b>Formel bearbeiten:</b> Gleichung in iWork öffnen, Text kopieren → im Formeleditor „⟲ Aus iWork laden“.</li>
+  <li><b>Grafik:</b> „⧉ Bild kopieren“ → im Dokument einsetzen; „⟲ Grafik öffnen …“ oder „Verlauf“ zum Weiterbearbeiten.</li></ul>
+  <footer>Rechnen im Browser mit Pyodide (Python für WebAssembly). Alle Daten bleiben auf dem Gerät.</footer>
+</main>
+<script>if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});</script>
+</body>
+</html>
