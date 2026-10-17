@@ -72,15 +72,13 @@ def _iwork_operator(m):
 
 def iwork_latex(latex, quelle=None):
     """LaTeX für „Einfügen → Gleichung“ in Pages/Keynote/Numbers.
-    Die Quelle des Editors reist als LaTeX-Kommentar in der letzten Zeile mit (unsichtbar im Satz)."""
+    Pages zeigt %-Kommentare sichtbar an (getestet) → keine Quelle anhängen; „Aus iWork laden“
+    findet die Gleichung über den Verlauf des Formeleditors wieder."""
     import urllib.parse
     for alt, neu in _IWORK_ERSATZ:
         latex = latex.replace(alt, neu)
     latex = re.sub(r"\\operatorname\{([^{}]*)\}", _iwork_operator, latex)
     latex = " ".join(latex.split())
-    if quelle is not None:
-        kodiert = urllib.parse.quote(json.dumps(quelle, ensure_ascii=False, separators=(",", ":")), safe="")
-        latex += "\n" + IWORK_PRAEFIX + kodiert
     return latex
 
 
