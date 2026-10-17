@@ -4,7 +4,7 @@
 const params = new URL(self.location.href).searchParams;
 const PYODIDE = params.get("pyodide") || "https://cdn.jsdelivr.net/pyodide/v0.26.4/full/";
 const QUELLEN = params.get("quellen") || "py/";
-const DATEIEN = ["__init__.py", "sprache.py", "satz.py", "vorlagen.py", "rechnen.py", "webapi.py"];
+const DATEIEN = ["sprache.py", "satz.py", "vorlagen.py", "rechnen.py", "webapi.py"];
 
 let py = null, ruf = null;
 const meldung = (stufe, text) => self.postMessage({ status: { stufe, text } });
@@ -14,9 +14,10 @@ async function kern() {
   importScripts(PYODIDE + "pyodide.js");
   py = await loadPyodide({ indexURL: PYODIDE });
   py.FS.mkdirTree("/home/pyodide/formeleditor");
+  py.FS.writeFile("/home/pyodide/formeleditor/__init__.py", "");   // nicht laden: GitHub Pages liefert Dateien mit „_“ am Anfang nicht aus
   for (const d of DATEIEN) {
     const r = await fetch(QUELLEN + d, { cache: "no-cache" });
-    if (!r.ok) throw new Error("Quelldatei fehlt: " + d);
+    if (!r.ok) throw new Error("Quelldatei fehlt: " + d + " (HTTP " + r.status + ")");
     py.FS.writeFile("/home/pyodide/formeleditor/" + d, await r.text());
   }
   py.runPython("import sys\nif '/home/pyodide' not in sys.path: sys.path.insert(0, '/home/pyodide')\nfrom formeleditor.webapi import ruf_json");

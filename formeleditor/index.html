@@ -609,7 +609,8 @@ document.addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.ke
   MODUS.mac = !!info.mac;
   $("macGruppe").hidden = !MODUS.mac;
   if (MODUS.mac) iworkApps();
-  if (!info.sympy) { k.textContent = "SymPy fehlt – nur Formelsatz möglich"; k.classList.add("fehlt"); }
+  if (info.fehler) { k.textContent = info.fehler; k.classList.add("fehlt"); }
+  else if (!info.sympy) { k.textContent = "SymPy fehlt – nur Formelsatz möglich"; k.classList.add("fehlt"); }
   else { k.classList.remove("fehlt"); k.textContent = (server ? "" : "Im Browser · ") + `Python ${info.python} · SymPy ${info.sympy} · NumPy ${info.numpy || "–"} · SciPy ${info.scipy || "–"}`; }
   if (server) { auftragPruefen(); setInterval(auftragPruefen, 1200); }
 })();
