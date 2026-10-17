@@ -94,6 +94,11 @@ dialog .knoepfe { display: flex; gap: 8px; justify-content: flex-end; margin-top
 .aktionen button { border: 1px solid var(--linie); background: var(--panel2); border-radius: 7px; width: 30px; height: 28px; cursor: pointer; font-size: 13px; }
 .aktionen button:hover { border-color: var(--akzent); }
 .neu { margin: 10px 0 0 44px; }
+.zieh { height: 28px; min-width: 30px; max-width: 72px; object-fit: contain; background: #fff; border: 1px solid var(--linie); border-radius: 7px; padding: 2px 4px; cursor: grab; -webkit-user-drag: element; -webkit-touch-callout: default; touch-action: auto; }
+.zieh:hover { border-color: var(--akzent); }
+header .zieh { height: 30px; max-width: 90px; }
+@media (hover: none) { .aktionen .zieh { height: 34px; } }
+body.ablage::after { content: "Bild hier ablegen – die Formel wird wieder geöffnet"; position: fixed; inset: 10px; border: 3px dashed var(--akzent); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: var(--akzent); background: rgba(0,0,0,.25); pointer-events: none; z-index: 50; }
 .hinweis { margin: 22px 0 0 44px; color: var(--dim); font-size: 12.5px; max-width: 760px; }
 .hinweis kbd { border: 1px solid var(--linie); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; font: 11.5px ui-monospace, Menlo, monospace; }
 .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel); border: 1px solid var(--akzent); padding: 8px 14px; border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
@@ -115,7 +120,8 @@ dialog .knoepfe { display: flex; gap: 8px; justify-content: flex-end; margin-top
   </span>
   <span class="gruppe" id="iworkGruppe">
     <button class="knopf" id="iworkKopieren" title="Aktive Zeile als iWork-Gleichung kopieren; in Pages, Keynote oder Numbers: Einfügen → Gleichung …, einsetzen, „Einfügen“">⧉ Für Pages/Keynote/Numbers</button>
-    <button class="knopf" id="iworkAlle" title="Alle Zeilen als eine mehrzeilige iWork-Gleichung kopieren">⧉ Alle (iWork)</button>
+    <button class="knopf" id="iworkAlle" draggable="true" title="Alle Zeilen als eine mehrzeilige iWork-Gleichung kopieren – oder in das Feld „Einfügen → Gleichung“ ziehen">⧉ Alle (iWork)</button>
+    <img class="zieh" id="ziehAlle" draggable="true" hidden alt="" title="Alle Zeilen als ein Bild in ein anderes Programm ziehen (Pages, Keynote, Numbers, Goodnotes …); zurück in den Formeleditor gezogen, öffnet es sich wieder">
     <span class="gruppe" id="macGruppe" hidden>
       <select id="iworkApp" aria-label="Zielprogramm"><option>Pages</option><option>Keynote</option><option>Numbers</option></select>
       <button class="knopf" id="iworkEinfuegen" title="Aktive Zeile direkt als Gleichung in das vorderste Dokument einfügen">⤓ Direkt einfügen</button>
@@ -143,7 +149,8 @@ dialog .knoepfe { display: flex; gap: 8px; justify-content: flex-end; margin-top
       Schreibweise wie im Funktionen-Explorer: <code>2x^2 - 3x + 1</code>, Dezimalkomma <code>1,5</code>, Argumente mit Semikolon <code>integrate(x^2; x; 0; 1)</code>,
       Festlegungen mit <code>:=</code> (<code>a := 3</code>, <code>f(x) := x^3 - 4x</code>) gelten in allen folgenden Zeilen.<br>
       Verlässt man eine Zeile, wird sie nur gesetzt. <b>Berechne</b> (<kbd>⌘</kbd><kbd>↩</kbd>) wertet sie mit SymPy, NumPy und SciPy aus.
-      <kbd>↩</kbd> neue Zeile · <kbd>Tab</kbd> nächster Platzhalter · <kbd>↑</kbd><kbd>↓</kbd> Zeile wechseln.
+      <kbd>↩</kbd> neue Zeile · <kbd>Tab</kbd> nächster Platzhalter · <kbd>↑</kbd><kbd>↓</kbd> Zeile wechseln.<br>
+      <b>Ziehen:</b> das kleine Formelbild rechts an der Zeile (bzw. oben neben „Alle (iWork)“) mit Finger, Stift oder Maus in Pages, Keynote, Numbers, Goodnotes … ziehen. Zurück in den Formeleditor gezogen, öffnet es sich wieder. <b>≡</b> lässt sich in das Feld „Einfügen → Gleichung“ ziehen.
     </div>
   </section>
 </main>
@@ -248,9 +255,10 @@ function neueZeile(nach = Z.length - 1, text = "") {
       <div class="meldung" hidden></div>
     </div>
     <div class="aktionen">
+      <img class="zieh" data-a="zieh" draggable="true" hidden alt="" title="Formel als Bild in ein anderes Programm ziehen (Pages, Keynote, Numbers, Goodnotes …); zurück in den Formeleditor gezogen, öffnet sie sich wieder">
       <button data-a="rechnen" title="Berechne (⌘↩)">▶</button>
       <button data-a="lo" title="In LibreOffice übernehmen" class="lo-nur">⤓</button>
-      <button data-a="iwork" title="Für Pages/Keynote/Numbers kopieren">≡</button>
+      <button data-a="iwork" draggable="true" title="Für Pages/Keynote/Numbers kopieren – oder in das Feld „Einfügen → Gleichung“ ziehen">≡</button>
       <button data-a="tex" title="LaTeX kopieren">⧉</button>
       <button data-a="weg" title="Zeile löschen">✕</button>
     </div>`;
@@ -289,6 +297,7 @@ function zeigeSatz(z) {
   else if (z.satz && z.satz.latex) { setze(z.satzEl, z.satz.latex, true); z.satzEl.classList.remove("ergebnis"); }
   else { z.satzEl.textContent = z.text; z.satzEl.classList.remove("ergebnis"); }
   meldung(z);
+  planeZiehen(z);
 }
 
 function meldung(z) {
@@ -326,7 +335,8 @@ function verdrahte(z) {
   });
   z.ta.addEventListener("blur", () => setTimeout(() => { if (document.activeElement !== z.ta) { satz(z); zeigeSatz(z); } }, 120));
   z.ta.addEventListener("keydown", e => tasten(z, e));
-  z.el.querySelector(".aktionen").addEventListener("mousedown", e => e.preventDefault());
+  z.el.querySelector(".aktionen").addEventListener("mousedown", e => { if (!e.target.closest("[draggable=true]")) e.preventDefault(); });
+  verdrahteZiehen(z);
   z.el.querySelector(".aktionen").addEventListener("click", e => {
     const a = e.target.dataset && e.target.dataset.a; if (!a) return;
     if (a === "rechnen") berechne(z);
@@ -552,6 +562,189 @@ async function iworkApps() {
 }
 $("iworkApp").addEventListener("focus", iworkApps);
 
+// ---------------------------------------------------------------- Ziehen und Ablegen: Formel als Bild mit eingebetteter Quelle
+// Safari kann beim Ziehen in andere Apps nur Text, Links und Bilder übergeben. Deshalb: Bild (PNG) der gesetzten Formel,
+// in dem das ganze Blatt steckt (PNG-Textblock). Zurück in den Formeleditor gezogen, öffnet es sich wieder.
+// ≡ bzw. „⧉ Alle (iWork)“ lassen sich als LaTeX-Text in das Gleichungsfeld von Pages/Keynote/Numbers ziehen.
+const FE_SCHLUESSEL = "Formeleditor", FE_PRAEFIX = "Formeleditor-Quelle:";
+const BILD_SKALA = 3, BILD_SCHRIFT = 14;               // 3-fache Auflösung; pHYs sagt den Apps die natürliche Größe
+let eigenerZug = false;
+const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+function pngBlock(typ, inhalt) {
+  const t = new TextEncoder().encode(typ), a = new Uint8Array(12 + inhalt.length), dv = new DataView(a.buffer);
+  dv.setUint32(0, inhalt.length); a.set(t, 4); a.set(inhalt, 8);
+  dv.setUint32(8 + inhalt.length, crc32(a.subarray(4, 8 + inhalt.length)));
+  return { typ, roh: a };
+}
+function pngTextBlock(schluessel, text) {
+  const s = schluessel + "\0" + text, b = new Uint8Array(s.length);
+  for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i) & 255;
+  return pngBlock("tEXt", b);
+}
+// Blöcke vor dem ersten IDAT einsetzen; gleichartige alte Blöcke (pHYs bzw. eigener tEXt-Schlüssel) entfernen
+function pngEinsetzen(a, bloecke, ersetzeText) {
+  const teile = [a.subarray(0, 8)], typen = new Set(bloecke.map(b => b.typ).filter(t => t !== "tEXt"));
+  let p = 8, eingesetzt = false;
+  while (p + 8 <= a.length) {
+    const len = new DataView(a.buffer, a.byteOffset + p).getUint32(0), typ = String.fromCharCode(...a.subarray(p + 4, p + 8));
+    const block = a.subarray(p, p + 12 + len);
+    if (typ === "IDAT" && !eingesetzt) { bloecke.forEach(b => teile.push(b.roh)); eingesetzt = true; }
+    let weg = typen.has(typ);
+    if (typ === "tEXt" && ersetzeText) { const d = a.subarray(p + 8, p + 8 + len); weg = String.fromCharCode(...d.subarray(0, d.indexOf(0))) === ersetzeText; }
+    if (!weg) teile.push(block);
+    p += 12 + len;
+  }
+  const n = teile.reduce((s, t) => s + t.length, 0), aus = new Uint8Array(n);
+  let o = 0; for (const t of teile) { aus.set(t, o); o += t.length; }
+  return aus;
+}
+function pngTexte(buf) {
+  const a = new Uint8Array(buf), aus = {};
+  if (a[0] !== 0x89 || a[1] !== 0x50) return aus;
+  let p = 8;
+  while (p + 8 <= a.length) {
+    const len = new DataView(a.buffer, p).getUint32(0), t = String.fromCharCode(...a.subarray(p + 4, p + 8));
+    if (t === "tEXt") { const d = a.subarray(p + 8, p + 8 + len), i = d.indexOf(0); aus[new TextDecoder("latin1").decode(d.subarray(0, i))] = new TextDecoder("latin1").decode(d.subarray(i + 1)); }
+    if (t === "IEND") break;
+    p += 12 + len;
+  }
+  return aus;
+}
+function bytesZuDataUrl(a) {
+  let s = ""; for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000));
+  return "data:image/png;base64," + btoa(s);
+}
+const blobZuDataUrl = b => new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); });
+// KaTeX-CSS mit eingebetteten Schriften (ein SVG-Bild darf nichts nachladen)
+let katexCssP = null;
+function katexCssEingebettet() {
+  if (!katexCssP) katexCssP = (async () => {
+    let css = await (await fetch("katex/katex.min.css")).text();
+    css = css.replace(/,\s*url\(fonts\/[^)]+\.(?:woff|ttf)\)\s*format\("(?:woff|truetype)"\)/g, "");
+    for (const u of new Set(css.match(/fonts\/KaTeX_[A-Za-z0-9_-]+\.woff2/g) || [])) {
+      try { css = css.split("url(" + u + ")").join("url(" + await blobZuDataUrl(await (await fetch("katex/" + u)).blob()) + ")"); } catch {}
+    }
+    return css + ".katex{font-size:1.12em}.katex-display{margin:0;text-align:left}.katex-display>.katex{text-align:left}";
+  })();
+  katexCssP.catch(() => { katexCssP = null; });
+  return katexCssP;
+}
+const warte = ms => new Promise(r => setTimeout(r, ms));
+const pngCache = new Map();
+function formelPng(tex) {
+  if (pngCache.has(tex)) return pngCache.get(tex);
+  const p = (async () => {
+    const css = await katexCssEingebettet();
+    const stil = `display:inline-block;padding:4px 6px;font-size:${BILD_SCHRIFT}px;color:#000;white-space:nowrap;line-height:1.2`;
+    const box = document.createElement("div");
+    box.setAttribute("style", "position:absolute;left:-99999px;top:0;" + stil);
+    katex.render(tex, box, { displayMode: true, throwOnError: false, output: "html", strict: "ignore", trust: false });
+    document.body.appendChild(box);
+    try { await document.fonts.ready; } catch {}
+    const r = box.getBoundingClientRect(); box.remove();
+    const w = Math.ceil(r.width) + 1, h = Math.ceil(r.height) + 1;
+    box.setAttribute("style", stil);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><foreignObject x="0" y="0" width="${w}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml"><style><![CDATA[${css}]]></style>${new XMLSerializer().serializeToString(box)}</div></foreignObject></svg>`;
+    const img = new Image();
+    await new Promise((ok, f) => { img.onload = ok; img.onerror = () => f(new Error("SVG nicht lesbar")); img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg); });
+    try { await img.decode(); } catch {}
+    const c = document.createElement("canvas");
+    c.width = Math.round(w * BILD_SKALA); c.height = Math.round(h * BILD_SKALA);
+    const g = c.getContext("2d"); g.scale(BILD_SKALA, BILD_SKALA);
+    g.drawImage(img, 0, 0, w, h);
+    await warte(150);                                   // Safari: Schriften im SVG-Bild erst beim zweiten Zeichnen sicher da
+    g.clearRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+    const blob = await new Promise((ok, f) => c.toBlob(b => b ? ok(b) : f(new Error("PNG nicht erzeugbar")), "image/png"));
+    const ppm = Math.round(72 * BILD_SKALA / 0.0254), phys = new Uint8Array(9), dv = new DataView(phys.buffer);
+    dv.setUint32(0, ppm); dv.setUint32(4, ppm); phys[8] = 1;
+    return pngEinsetzen(new Uint8Array(await blob.arrayBuffer()), [pngBlock("pHYs", phys)]);
+  })();
+  pngCache.set(tex, p);
+  p.catch(() => pngCache.delete(tex));
+  if (pngCache.size > 150) pngCache.delete(pngCache.keys().next().value);
+  return p;
+}
+const quellText = q => FE_PRAEFIX + encodeURIComponent(JSON.stringify(q));
+function setzeZiehBild(img, bytes, q) { img.src = bytesZuDataUrl(pngEinsetzen(bytes, [pngTextBlock(FE_SCHLUESSEL, quellText(q))], FE_SCHLUESSEL)); }
+
+// --- je Zeile
+function planeZiehen(z) { clearTimeout(z.ziehUhr); z.ziehUhr = setTimeout(() => bereiteZiehen(z), 300); planeAlle(); }
+async function bereiteZiehen(z) {
+  const griff = z.el.querySelector(".zieh"), tex = texVon(z);
+  if (!tex) { griff.hidden = true; z.ziehPng = null; return; }
+  if (tex === z.ziehTex && z.ziehPng) return;
+  try {
+    const b = await formelPng(tex);
+    if (texVon(z) !== tex) return;
+    z.ziehTex = tex; z.ziehPng = b; griff.hidden = false;
+    setzeZiehBild(griff, b, quelle(index(z)));
+  } catch (e) { console.warn("Ziehbild:", e); griff.hidden = true; }
+  try { z.ziehLatex = (await api("/api/iwork_latex", { latex: tex })).latex; } catch {}
+}
+function verdrahteZiehen(z) {
+  const griff = z.el.querySelector(".zieh"), gleich = z.el.querySelector('[data-a="iwork"]');
+  const frisch = () => { if (z.ziehPng) setzeZiehBild(griff, z.ziehPng, quelle(index(z))); };   // aktuelles Blatt mitgeben
+  ["pointerdown", "touchstart", "mouseenter"].forEach(t => griff.addEventListener(t, frisch, { passive: true }));
+  griff.addEventListener("dragstart", () => { eigenerZug = true; if (z.ziehLatex) merkeVerlauf(z.ziehLatex, quelle(index(z)), z.ziehTex); });
+  gleich.addEventListener("dragstart", e => {
+    const t = z.ziehLatex || texVon(z); if (!t) { e.preventDefault(); return; }
+    eigenerZug = true; e.dataTransfer.setData("text/plain", t); e.dataTransfer.effectAllowed = "copy";
+    merkeVerlauf(t, quelle(index(z)), texVon(z));
+  });
+}
+// --- alle Zeilen
+let alleUhr = null, alle = { tex: null, png: null, latex: null };
+function texAlle() {
+  const teile = Z.filter(y => y.text.trim()).map(texVon).filter(Boolean);
+  return teile.length > 1 ? "\\begin{gathered}" + teile.join(" \\\\ ") + "\\end{gathered}" : teile[0] || null;
+}
+const quelleAlle = () => Object.assign(quelle(-1), { alle: true });
+function planeAlle() { clearTimeout(alleUhr); alleUhr = setTimeout(bereiteAlle, 700); }
+async function bereiteAlle() {
+  const griff = $("ziehAlle"), tex = texAlle();
+  if (!tex || Z.filter(y => y.text.trim()).length < 2) { griff.hidden = true; alle.png = null; return; }
+  if (tex === alle.tex && alle.png) return;
+  try { const b = await formelPng(tex); if (texAlle() !== tex) return; alle.tex = tex; alle.png = b; griff.hidden = false; setzeZiehBild(griff, b, quelleAlle()); }
+  catch (e) { console.warn("Ziehbild:", e); griff.hidden = true; }
+  try { alle.latex = (await api("/api/iwork_latex", { latex: tex })).latex; } catch {}
+}
+(() => {
+  const griff = $("ziehAlle");
+  const frisch = () => { if (alle.png) setzeZiehBild(griff, alle.png, quelleAlle()); };
+  ["pointerdown", "touchstart", "mouseenter"].forEach(t => griff.addEventListener(t, frisch, { passive: true }));
+  griff.addEventListener("dragstart", () => { eigenerZug = true; if (alle.latex) merkeVerlauf(alle.latex, quelleAlle(), alle.tex); });
+  $("iworkAlle").addEventListener("dragstart", e => {
+    const t = alle.latex || texAlle(); if (!t) { e.preventDefault(); return; }
+    eigenerZug = true; e.dataTransfer.setData("text/plain", t); e.dataTransfer.effectAllowed = "copy";
+    merkeVerlauf(t, quelleAlle(), texAlle());
+  });
+})();
+// --- Ablegen: Bild aus Pages, Keynote, Numbers, Goodnotes, Dateien … zurück in den Formeleditor
+const hatDateien = e => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files"));
+document.addEventListener("dragend", () => { eigenerZug = false; });
+document.addEventListener("dragover", e => {
+  if (eigenerZug || !hatDateien(e)) return;
+  e.preventDefault(); e.dataTransfer.dropEffect = "copy"; document.body.classList.add("ablage");
+});
+document.addEventListener("dragleave", e => { if (!e.relatedTarget) document.body.classList.remove("ablage"); });
+document.addEventListener("drop", async e => {
+  document.body.classList.remove("ablage");
+  if (eigenerZug || !hatDateien(e)) return;
+  e.preventDefault();
+  const d = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (d) await ladeBildDatei(d);
+});
+async function ladeBildDatei(d) {
+  try {
+    const t = pngTexte(await d.arrayBuffer()), roh = t[FE_SCHLUESSEL];
+    if (roh && roh.startsWith(FE_PRAEFIX)) { await ladeQuelle(JSON.parse(decodeURIComponent(roh.slice(FE_PRAEFIX.length))), "Formel aus dem Bild geöffnet."); return; }
+    if (t["Funktionen-Explorer"]) { toast("Das ist ein Graph – bitte im Funktionen-Explorer ablegen."); return; }
+    toast("In diesem Bild steckt keine Formeleditor-Quelle (die App hat sie beim Ziehen entfernt). Hilfe: „⟲ Aus iWork laden“ → „Zuletzt erzeugt“.");
+  } catch (err) { console.warn(err); toast("Datei nicht lesbar."); }
+}
+katexCssEingebettet();                                  // Schriften schon vorab laden
+
 // ---------------------------------------------------------------- Blatt laden / sichern
 async function ladeQuelle(q, text) {
   Z.splice(0).forEach(z => z.el.remove());
@@ -615,7 +808,7 @@ document.addEventListener("keydown", e => { if ((e.metaKey || e.ctrlKey) && e.ke
   if (server) { auftragPruefen(); setInterval(auftragPruefen, 1200); }
 })();
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("../sw.js").catch(() => {});
-window.formeleditor = { Z, berechne, uebernehmen, einfuegen, neueZeile, bearbeiten, iworkTex, ladeQuelle, MODUS, api };
+window.formeleditor = { formelPng, pngTexte, ladeBildDatei, Z, berechne, uebernehmen, einfuegen, neueZeile, bearbeiten, iworkTex, ladeQuelle, MODUS, api };
 </script>
 </body>
 </html>

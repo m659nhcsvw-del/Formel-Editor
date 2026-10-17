@@ -158,6 +158,9 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); fon
 .frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 0.15em; }
 .canvas-wrap { position: relative; flex: 1; min-height: 320px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--stage); }
 canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.zieh-grafik { position: absolute; right: 8px; top: 8px; width: 92px; height: 60px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.25); cursor: grab; z-index: 5; opacity: .9; -webkit-user-drag: element; -webkit-touch-callout: default; touch-action: auto; }
+.zieh-grafik:hover { opacity: 1; }
+body.ablage::after { content: "Grafik hier ablegen – sie wird mit allen Einstellungen wieder geöffnet"; position: fixed; inset: 10px; border: 3px dashed #58C4DD; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #58C4DD; background: rgba(0,0,0,.25); pointer-events: none; z-index: 50; }
 canvas.grab { cursor: grabbing; }
 .hint { color: var(--dim); font-size: 12px; line-height: 1.5; }
 .lo-hinweis { color: var(--text, inherit); }
@@ -3487,8 +3490,8 @@ window.explorer = FunktionenExplorer();
   // ---------- Grafik öffnen (SVG oder PNG aus diesem Explorer)
   const dateiFeld = $("grafikDatei"), oeffnenKnopf = $("grafikOeffnen");
   oeffnenKnopf.addEventListener("click", () => { dateiFeld.value = ""; dateiFeld.click(); });
-  dateiFeld.addEventListener("change", async () => {
-    const d = dateiFeld.files && dateiFeld.files[0]; if (!d) return;
+  dateiFeld.addEventListener("change", () => { const d = dateiFeld.files && dateiFeld.files[0]; if (d) oeffneDatei(d); });
+  async function oeffneDatei(d) {
     const std = "⟲ Grafik öffnen …";
     try {
       let roh = null;
@@ -3499,11 +3502,12 @@ window.explorer = FunktionenExplorer();
       } else {
         roh = pngText(await d.arrayBuffer())["Funktionen-Explorer"] || null;
       }
-      if (!roh || !roh.startsWith(PRAEFIX)) { meldung(oeffnenKnopf, "keine Explorer-Einstellungen in der Datei", std); return; }
+      if (!roh || !roh.startsWith(PRAEFIX)) { meldung(oeffnenKnopf, "keine Explorer-Einstellungen in der Datei", std); return false; }
       ex.setzeZustand(JSON.parse(decodeURIComponent(roh.slice(PRAEFIX.length))));
       meldung(oeffnenKnopf, "✓ Einstellungen geladen", std);
-    } catch (e) { console.warn(e); meldung(oeffnenKnopf, "Datei nicht lesbar", std); }
-  });
+      return true;
+    } catch (e) { console.warn(e); meldung(oeffnenKnopf, "Datei nicht lesbar", std); return false; }
+  }
 
   // ---------- Verlauf anzeigen
   const dlg = $("verlaufDialog");
@@ -3549,8 +3553,48 @@ window.explorer = FunktionenExplorer();
     } catch (e) { meldung(einfuegeKnopf, "nicht erreichbar", std); }
   });
 
+  // ---------- Ziehen und Ablegen: Grafik mit allen Einstellungen in andere Apps ziehen und zurück
+  // (Safari übergibt beim Ziehen nur Text, Links und Bilder → PNG, in dem der Zustand steckt)
+  const zieh = document.createElement("img");
+  zieh.className = "zieh-grafik"; zieh.draggable = true; zieh.alt = ""; zieh.hidden = true;
+  zieh.title = "Grafik in ein anderes Programm ziehen (Pages, Keynote, Numbers, Goodnotes …) – zurück in den Explorer gezogen, öffnet sie sich mit allen Einstellungen";
+  $("wrap").appendChild(zieh);
+  let ziehStand = "", ziehNeu = "", ziehSeit = 0, ziehLaeuft = false, eigenerZug = false;
+  setInterval(async () => {
+    if (document.hidden || eigenerZug || ziehLaeuft) return;
+    let s; try { s = JSON.stringify(ex.zustand()); } catch { return; }
+    if (s === ziehStand) return;
+    if (s !== ziehNeu) { ziehNeu = s; ziehSeit = Date.now(); return; }
+    if (Date.now() - ziehSeit < 500) return;              // erst wenn die Einstellung kurz ruht
+    ziehLaeuft = true;
+    try { zieh.src = await blobZuDataUrl(await bildPng()); zieh.hidden = false; ziehStand = s; }
+    catch (e) { console.warn("Ziehbild:", e); }
+    finally { ziehLaeuft = false; }
+  }, 350);
+  ["pointerdown", "touchstart", "mousedown"].forEach(t => zieh.addEventListener(t, e => e.stopPropagation(), { passive: true }));
+  zieh.addEventListener("dragstart", () => { eigenerZug = true; merke(); });
+  document.addEventListener("dragend", () => { eigenerZug = false; });
+  const hatDateien = e => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files"));
+  document.addEventListener("dragover", e => {
+    if (eigenerZug || !hatDateien(e)) return;
+    e.preventDefault(); e.dataTransfer.dropEffect = "copy"; document.body.classList.add("ablage");
+  });
+  document.addEventListener("dragleave", e => { if (!e.relatedTarget) document.body.classList.remove("ablage"); });
+  document.addEventListener("drop", async e => {
+    document.body.classList.remove("ablage");
+    if (eigenerZug || !hatDateien(e)) return;
+    e.preventDefault();
+    const d = e.dataTransfer.files && e.dataTransfer.files[0]; if (!d) return;
+    if (/png/i.test(d.type) || /\.png$/i.test(d.name)) {
+      const t = pngText(await d.arrayBuffer());
+      if (t["Formeleditor"]) { meldung(oeffnenKnopf, "Formel – bitte im Formeleditor ablegen", "⟲ Grafik öffnen …"); return; }
+      if (!t["Funktionen-Explorer"]) { meldung(oeffnenKnopf, "keine Einstellungen im Bild (von der App entfernt) – „Verlauf“ hilft", "⟲ Grafik öffnen …"); return; }
+    }
+    oeffneDatei(d);
+  });
+
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("../sw.js").catch(() => {});
-  window.explorerIWork = { bildPng, pngText, svgZuPng, verlauf, merke };
+  window.explorerIWork = { oeffneDatei, bildPng, pngText, svgZuPng, verlauf, merke };
 })();
 </script>
 
