@@ -158,9 +158,6 @@ body { background: var(--bg); color: var(--fg); font-family: var(--font-ui); fon
 .frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 0.15em; }
 .canvas-wrap { position: relative; flex: 1; min-height: 320px; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: var(--stage); }
 canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
-.zieh-grafik { position: absolute; right: 8px; top: 8px; width: 92px; height: 60px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.25); cursor: grab; z-index: 5; opacity: .9; -webkit-user-drag: element; -webkit-touch-callout: default; touch-action: auto; }
-.zieh-grafik:hover { opacity: 1; }
-body.ablage::after { content: "Grafik hier ablegen – sie wird mit allen Einstellungen wieder geöffnet"; position: fixed; inset: 10px; border: 3px dashed #58C4DD; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #58C4DD; background: rgba(0,0,0,.25); pointer-events: none; z-index: 50; }
 canvas.grab { cursor: grabbing; }
 .hint { color: var(--dim); font-size: 12px; line-height: 1.5; }
 .lo-hinweis { color: var(--text, inherit); }
@@ -176,6 +173,13 @@ canvas.grab { cursor: grabbing; }
 .verlauf-eintrag:hover { border-color: currentColor; }
 .verlauf-eintrag img { width: 100%; border-radius: 6px; background: #fff1; }
 .verlauf-eintrag small { display: block; opacity: .65; margin-top: 2px; }
+.zieh { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed rgba(127,127,127,.5); border-radius: 10px; padding: 3px 6px; }
+.zieh[hidden] { display: none; }
+.zieh img { height: 34px; max-width: 160px; object-fit: contain; border-radius: 5px; cursor: grab; -webkit-user-drag: element; -webkit-touch-callout: default; user-select: none; -webkit-user-select: none; }
+.zieh a { font-size: 12.5px; text-decoration: none; color: inherit; opacity: .9; white-space: nowrap; -webkit-touch-callout: default; }
+.zieh small { font-size: 11px; opacity: .65; }
+.abwurf { position: fixed; inset: 12px; border: 3px dashed #58C4DD; border-radius: 18px; background: rgba(88,196,221,.12); display: flex; align-items: center; justify-content: center; font: 600 20px -apple-system, sans-serif; color: #58C4DD; pointer-events: none; z-index: 50; }
+.abwurf[hidden] { display: none; }
 .verlauf-knoepfe { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
 
 
@@ -416,6 +420,7 @@ input[type=text].bad { border-color: var(--null); }
       <button type="button" class="btn svg-knopf" id="grafikOeffnen" title="Eine mit diesem Explorer erzeugte SVG- oder PNG-Datei öffnen und weiterbearbeiten">⟲ Grafik öffnen …</button>
       <input type="file" id="grafikDatei" accept=".svg,.png,image/svg+xml,image/png" hidden>
       <button type="button" class="btn svg-knopf" id="verlaufKnopf" title="Zuletzt kopierte oder gesicherte Grafiken">Verlauf</button>
+      <span class="zieh" id="ziehFeld" hidden title="Graph: Bild halten und in Pages, Keynote, Numbers oder eine andere App ziehen. Zum Bearbeiten das Bild zurück hierher ziehen oder den Link antippen."><img id="ziehBild" alt="Graph – in eine andere App ziehen" draggable="true"><small>ziehen ⇢</small><a id="ziehLink" href="#" draggable="true" title="Diesen Link neben den Graphen ziehen: Antippen öffnet ihn wieder hier">✎ Link</a></span>
       <div class="trace-felder" id="traceFelder" hidden>
         <div class="field"><label for="trX"><i>x</i> =</label><input type="text" id="trX" inputmode="text" autocomplete="off" spellcheck="false" aria-describedby="trHinweis"></div>
         <div class="field"><label for="trY"><i>y</i> = <i class="akt-f">f</i>(<i>x</i>) =</label><input type="text" id="trY" inputmode="text" autocomplete="off" spellcheck="false" aria-describedby="trHinweis"></div>
@@ -424,7 +429,7 @@ input[type=text].bad { border-color: var(--null); }
     </div>
     <div class="canvas-wrap" id="wrap"><canvas id="cv" aria-label="Koordinatensystem mit dem Graphen der Funktion"></canvas><div class="sum-tip" id="sumTip" hidden role="status"></div></div>
     <div class="nregler"><label for="nSlider1">Teilintervalle <i>n</i></label><input type="range" id="nSlider1" min="0" max="1000" step="1" value="301" aria-describedby="sumHinweis"><output for="nSlider1">8</output><span class="skala" aria-hidden="true"><span>1</span><span>10</span><span>100</span><span>1000</span></span></div>
-    <p class="hint lo-hinweis"><b>Pages, Keynote, Numbers:</b> „⧉ Bild kopieren“ und im Dokument einsetzen (<kbd>⌘</kbd><kbd>V</kbd> bzw. tippen → „Einsetzen“). Für Vektorqualität „⤓ Grafik als SVG speichern“ und in iWork <b>Einfügen → Auswählen …</b> bzw. <b>+ → Foto oder Video → Einfügen aus</b>. Jede Grafik merkt sich alle Einstellungen: mit „⟲ Grafik öffnen …“ (SVG oder PNG) oder über „Verlauf“ geht es genau dort weiter.</p>
+    <p class="hint lo-hinweis"><b>Pages, Keynote, Numbers:</b> „⧉ Bild kopieren“ und im Dokument einsetzen (<kbd>⌘</kbd><kbd>V</kbd> bzw. tippen → „Einsetzen“). Für Vektorqualität „⤓ Grafik als SVG speichern“ und in iWork <b>Einfügen → Auswählen …</b> bzw. <b>+ → Foto oder Video → Einfügen aus</b>. Jede Grafik merkt sich alle Einstellungen: mit „⟲ Grafik öffnen …“ (SVG oder PNG) oder über „Verlauf“ geht es genau dort weiter. <b>Ziehen (iPad, Mac):</b> das Bild bei „ziehen ⇢“ halten und in die andere App ziehen, „✎ Link“ daneben legen; zum Ändern das Bild zurück hierher ziehen oder den Link antippen.</p>
     <p class="hint">Beim Start ist nur der Graph von f zu sehen – alles Weitere über die Knöpfe einblenden. Schreibweise: 2x^2, 0,5x, sin(x), e^x, √x, |x|, x!, log(x; 2) – Argumente mit Semikolon trennen. Zweite Funktion g(x) im zweiten Feld · „Bearbeiten“ wählt, ob Grad, Koeffizienten und Punkt zu f oder g gehören · Kreise ziehen (nur Polynome): Graph verformen · Graph ziehen: verschieben · Punkt P (an f) bzw. Q (an g) ziehen oder Koordinaten eintragen: Tangente gleitet entlang des Graphen · Sekante: A und B ziehen oder ihre Koordinaten eintragen (Steigungsdreieck mit Δx, Δy) · Trace-Modus: Senkrechte bzw. Punkt auf der x-Achse ziehen oder x eintragen – Kurven, die danach eingeschaltet werden, entstehen als Spur hinter dem Trace-Punkt · „▶ Abspielen“ lässt den Trace-Punkt nach rechts laufen · Schnittpunktberechnung: Schnittpunkte aller sichtbaren Graphen · y-Achsenabschnitt: Schnittpunkte mit der y-Achse · Marken a und b auf der x-Achse ziehen: Integrationsgrenzen · Ober-, Unter-, Trapez-, Mittensumme: Knopf drücken, a, b und n eintragen (n auch über die Schieberegler, 1 … 1000) – Zeiger über ein Rechteck bzw. Trapez zeigt seinen Anteil an der Summe (absolut und in Prozent) · „⤓ Grafik als SVG speichern“: Inhalt des Grafikfensters als Vektorgrafik, benannt nach den eingeblendeten Kurven und Eigenschaften · Hintergrund ziehen: Ansicht bewegen · Mausrad oder zwei Finger: Zoom · Funktionsleisten: <i>F</i> … <i>f</i>‴ und <i>G</i> … <i>g</i>‴ einzeln ein- und ausblenden</p>
   </main>
 
@@ -3367,9 +3372,133 @@ function FunktionenExplorer(opts = {}) {
 window.Polynom = Polynom; window.Term = Term; window.Analyse = Analyse; window.Summen = Summen; window.SvgExport = SvgExport;
 window.explorer = FunktionenExplorer();
 </script>
+<div class="abwurf" id="abwurf" hidden>Loslassen – Graph wieder bearbeiten</div>
 <dialog id="verlaufDialog"><h2>Zuletzt kopierte und gesicherte Grafiken</h2><div class="verlauf-liste" id="verlaufListe"></div>
 <div class="verlauf-knoepfe"><button type="button" class="btn" id="verlaufLeeren">Verlauf leeren</button><button type="button" class="btn" id="verlaufZu">Schließen</button></div></dialog>
 <script>
+// Gemeinsame Hilfen für Formeleditor und Funktionen-Explorer: Ziehen in andere Apps und Zurückziehen.
+// PNG-Textblock (tEXt) schreiben/lesen, Bild-Fingerabdruck (Differenz-Hash), Abwurfzone für Dateien, Bilder und Links.
+"use strict";
+window.Ziehen = (() => {
+  const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = b => { let c = 0xffffffff; for (const x of b) c = CRC[(c ^ x) & 255] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; };
+  const typ4 = (a, p) => String.fromCharCode(a[p], a[p + 1], a[p + 2], a[p + 3]);
+
+  // Text (ASCII) als tEXt-Block vor dem ersten IDAT einsetzen
+  async function pngMitText(blob, schluessel, text) {
+    const a = new Uint8Array(await blob.arrayBuffer());
+    const inhalt = new TextEncoder().encode(schluessel + "\0" + text);
+    const typ = new TextEncoder().encode("tEXt");
+    const block = new Uint8Array(12 + inhalt.length), dv = new DataView(block.buffer);
+    dv.setUint32(0, inhalt.length); block.set(typ, 4); block.set(inhalt, 8);
+    const fuerCrc = new Uint8Array(4 + inhalt.length); fuerCrc.set(typ, 0); fuerCrc.set(inhalt, 4);
+    dv.setUint32(8 + inhalt.length, crc32(fuerCrc));
+    let p = 8;
+    while (p + 8 <= a.length) {
+      const len = new DataView(a.buffer, p).getUint32(0);
+      if (typ4(a, p + 4) === "IDAT") break;
+      p += 12 + len;
+    }
+    return new Blob([a.subarray(0, p), block, a.subarray(p)], { type: "image/png" });
+  }
+  function pngText(buf) {
+    const a = new Uint8Array(buf), aus = {};
+    if (a.length < 8 || a[0] !== 0x89 || a[1] !== 0x50) return aus;
+    let p = 8;
+    while (p + 8 <= a.length) {
+      const len = new DataView(a.buffer, a.byteOffset + p).getUint32(0), t = typ4(a, p + 4);
+      if (t === "tEXt") {
+        const d = a.subarray(p + 8, p + 8 + len), i = d.indexOf(0);
+        if (i > 0) aus[new TextDecoder("latin1").decode(d.subarray(0, i))] = new TextDecoder("latin1").decode(d.subarray(i + 1));
+      }
+      if (t === "IEND") break;
+      p += 12 + len;
+    }
+    return aus;
+  }
+
+  // Fingerabdruck: 48×32-Graustufen-Miniatur auf Weiß (als Hex-Text) + Seitenverhältnis
+  function ladeBild(quelle) {
+    return new Promise((ok, fehler) => {
+      const img = new Image();
+      img.onload = () => ok(img);
+      img.onerror = () => fehler(new Error("Bild nicht lesbar"));
+      img.src = quelle;
+    });
+  }
+  function blobZuDataUrl(b) { return new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(b); }); }
+  async function fingerabdruck(quelle) {
+    const img = quelle instanceof Blob ? await ladeBild(await blobZuDataUrl(quelle)) : (typeof quelle === "string" ? await ladeBild(quelle) : quelle);
+    // schrittweise halbieren (Mittelung statt Stichprobe) → unabhängig von der Auflösung
+    let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+    let q = document.createElement("canvas"); q.width = w; q.height = h;
+    let qg = q.getContext("2d"); qg.fillStyle = "#fff"; qg.fillRect(0, 0, w, h); qg.drawImage(img, 0, 0, w, h);
+    while (w > 96 || h > 64) {
+      const nw = Math.max(48, Math.round(w / 2)), nh = Math.max(32, Math.round(h / 2));
+      const n = document.createElement("canvas"); n.width = nw; n.height = nh;
+      const ng = n.getContext("2d"); ng.imageSmoothingQuality = "high"; ng.drawImage(q, 0, 0, nw, nh);
+      q = n; w = nw; h = nh;
+    }
+    const c = document.createElement("canvas"); c.width = 48; c.height = 32;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    g.imageSmoothingQuality = "high";
+    g.drawImage(q, 0, 0, 48, 32);
+    const d = g.getImageData(0, 0, 48, 32).data;
+    let hex = "";
+    for (let i = 0; i < d.length; i += 4) hex += Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]).toString(16).padStart(2, "0");
+    return { hex, seiten: img.naturalWidth / Math.max(1, img.naturalHeight) };
+  }
+  function abstand(a, b) {               // 1 − Korrelation der 48×32-Miniaturen (0 = gleich, 1 = unabhängig)
+    if (!a || !b || a.hex.length !== b.hex.length) return Infinity;
+    if (Math.abs(Math.log((a.seiten || 1) / (b.seiten || 1))) > 0.08) return Infinity;   // anderes Seitenverhältnis
+    const n = a.hex.length / 2, x = new Float64Array(n), y = new Float64Array(n);
+    let mx = 0, my = 0;
+    for (let i = 0; i < n; i++) { x[i] = parseInt(a.hex.substr(2 * i, 2), 16); y[i] = parseInt(b.hex.substr(2 * i, 2), 16); mx += x[i]; my += y[i]; }
+    mx /= n; my /= n;
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) { const u = x[i] - mx, v = y[i] - my; sxy += u * v; sxx += u * u; syy += v * v; }
+    if (sxx < 1e-9 || syy < 1e-9) return sxx < 1e-9 && syy < 1e-9 ? 0 : 1;
+    return 1 - sxy / Math.sqrt(sxx * syy);
+  }
+  // bestes Verlaufs-Element zum Fingerabdruck: höchstens grenze entfernt und deutlich näher als das zweitbeste
+  function suche(fp, eintraege, grenze = 0.02, vorsprung = 0.03) {
+    const d = eintraege.map(e => [abstand(fp, e.fp), e]).filter(x => x[0] < Infinity).sort((a, b) => a[0] - b[0]);
+    if (!d.length || d[0][0] > grenze) return null;
+    if (d.length > 1 && d[1][0] - d[0][0] < vorsprung) return null;
+    return d[0][1];
+  }
+  // Abwurfzone: ganze Seite. behandle({datei, text, url}) → true, wenn erkannt
+  function abwurfzone(behandle, hinweis) {
+    let eigen = false, tiefe = 0;
+    document.addEventListener("dragstart", () => { eigen = true; });
+    document.addEventListener("dragend", () => { eigen = false; });
+    const zeige = an => { if (hinweis) hinweis.hidden = !an; };
+    document.addEventListener("dragenter", e => { if (eigen) return; tiefe++; e.preventDefault(); zeige(true); });
+    document.addEventListener("dragleave", () => { if (--tiefe <= 0) { tiefe = 0; zeige(false); } });
+    document.addEventListener("dragover", e => { if (eigen) return; e.preventDefault(); if (e.dataTransfer) e.dataTransfer.dropEffect = "copy"; });
+    document.addEventListener("drop", async e => {
+      tiefe = 0; zeige(false);
+      if (eigen) return;
+      const ziel = e.target;
+      if (ziel && (ziel.tagName === "TEXTAREA" || (ziel.tagName === "INPUT" && ziel.type === "text"))) {
+        // Text in ein Eingabefeld: nur übernehmen, wenn es ein Explorer-/Editor-Link ist
+        const t = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");
+        if (!/[#&](zustand|quelle)=|%FE1:/.test(t || "")) return;
+      }
+      e.preventDefault();
+      const dt = e.dataTransfer, daten = { datei: null, text: "", url: "" };
+      if (dt.files && dt.files.length) daten.datei = dt.files[0];
+      daten.url = (dt.getData("text/uri-list") || "").split(/\r?\n/).find(z => z && !z.startsWith("#")) || "";
+      daten.text = dt.getData("text/plain") || "";
+      if (!daten.datei && dt.items) {
+        for (const it of dt.items) if (it.kind === "file") { daten.datei = it.getAsFile(); break; }
+      }
+      try { await behandle(daten); } catch (err) { console.warn("Abwurf:", err); }
+    });
+  }
+  return { pngMitText, pngText, fingerabdruck, abstand, suche, abwurfzone, blobZuDataUrl, ladeBild };
+})();
+
 // ----- iWork-Ausgabe (Pages, Keynote, Numbers – Mac und iPad): Bild kopieren, direkt einfügen, Grafik wieder öffnen, Verlauf
 (() => {
   "use strict";
@@ -3450,8 +3579,9 @@ window.explorer = FunktionenExplorer();
     try {
       const z = ex.zustand(), roh = JSON.stringify(z);
       const vorschau = await blobZuDataUrl(await svgZuPng(ex.svg(), 0.35));
+      const fp = await Ziehen.fingerabdruck(await bildPng());    // aus dem Bild in voller Größe, wie es in die andere App geht
       const v = verlauf().filter(e => JSON.stringify(e.z) !== roh);
-      v.unshift({ z, name: ex.svgDateiname, zeit: Date.now(), vorschau });
+      v.unshift({ z, name: ex.svgDateiname, zeit: Date.now(), vorschau, fp });
       for (let n = Math.min(v.length, 30); n > 0; n--) {
         try { localStorage.setItem(VERLAUF, JSON.stringify(v.slice(0, n))); break; } catch { /* Speicher voll → weniger Einträge */ }
       }
@@ -3490,8 +3620,8 @@ window.explorer = FunktionenExplorer();
   // ---------- Grafik öffnen (SVG oder PNG aus diesem Explorer)
   const dateiFeld = $("grafikDatei"), oeffnenKnopf = $("grafikOeffnen");
   oeffnenKnopf.addEventListener("click", () => { dateiFeld.value = ""; dateiFeld.click(); });
-  dateiFeld.addEventListener("change", () => { const d = dateiFeld.files && dateiFeld.files[0]; if (d) oeffneDatei(d); });
-  async function oeffneDatei(d) {
+  dateiFeld.addEventListener("change", async () => {
+    const d = dateiFeld.files && dateiFeld.files[0]; if (!d) return;
     const std = "⟲ Grafik öffnen …";
     try {
       let roh = null;
@@ -3502,12 +3632,11 @@ window.explorer = FunktionenExplorer();
       } else {
         roh = pngText(await d.arrayBuffer())["Funktionen-Explorer"] || null;
       }
-      if (!roh || !roh.startsWith(PRAEFIX)) { meldung(oeffnenKnopf, "keine Explorer-Einstellungen in der Datei", std); return false; }
+      if (!roh || !roh.startsWith(PRAEFIX)) { meldung(oeffnenKnopf, "keine Explorer-Einstellungen in der Datei", std); return; }
       ex.setzeZustand(JSON.parse(decodeURIComponent(roh.slice(PRAEFIX.length))));
       meldung(oeffnenKnopf, "✓ Einstellungen geladen", std);
-      return true;
-    } catch (e) { console.warn(e); meldung(oeffnenKnopf, "Datei nicht lesbar", std); return false; }
-  }
+    } catch (e) { console.warn(e); meldung(oeffnenKnopf, "Datei nicht lesbar", std); }
+  });
 
   // ---------- Verlauf anzeigen
   const dlg = $("verlaufDialog");
@@ -3553,48 +3682,69 @@ window.explorer = FunktionenExplorer();
     } catch (e) { meldung(einfuegeKnopf, "nicht erreichbar", std); }
   });
 
-  // ---------- Ziehen und Ablegen: Grafik mit allen Einstellungen in andere Apps ziehen und zurück
-  // (Safari übergibt beim Ziehen nur Text, Links und Bilder → PNG, in dem der Zustand steckt)
-  const zieh = document.createElement("img");
-  zieh.className = "zieh-grafik"; zieh.draggable = true; zieh.alt = ""; zieh.hidden = true;
-  zieh.title = "Grafik in ein anderes Programm ziehen (Pages, Keynote, Numbers, Goodnotes …) – zurück in den Explorer gezogen, öffnet sie sich mit allen Einstellungen";
-  $("wrap").appendChild(zieh);
-  let ziehStand = "", ziehNeu = "", ziehSeit = 0, ziehLaeuft = false, eigenerZug = false;
-  setInterval(async () => {
-    if (document.hidden || eigenerZug || ziehLaeuft) return;
-    let s; try { s = JSON.stringify(ex.zustand()); } catch { return; }
-    if (s === ziehStand) return;
-    if (s !== ziehNeu) { ziehNeu = s; ziehSeit = Date.now(); return; }
-    if (Date.now() - ziehSeit < 500) return;              // erst wenn die Einstellung kurz ruht
-    ziehLaeuft = true;
-    try { zieh.src = await blobZuDataUrl(await bildPng()); zieh.hidden = false; ziehStand = s; }
-    catch (e) { console.warn("Ziehbild:", e); }
-    finally { ziehLaeuft = false; }
-  }, 350);
-  ["pointerdown", "touchstart", "mousedown"].forEach(t => zieh.addEventListener(t, e => e.stopPropagation(), { passive: true }));
-  zieh.addEventListener("dragstart", () => { eigenerZug = true; merke(); });
-  document.addEventListener("dragend", () => { eigenerZug = false; });
-  const hatDateien = e => !!(e.dataTransfer && Array.from(e.dataTransfer.types || []).includes("Files"));
-  document.addEventListener("dragover", e => {
-    if (eigenerZug || !hatDateien(e)) return;
-    e.preventDefault(); e.dataTransfer.dropEffect = "copy"; document.body.classList.add("ablage");
-  });
-  document.addEventListener("dragleave", e => { if (!e.relatedTarget) document.body.classList.remove("ablage"); });
-  document.addEventListener("drop", async e => {
-    document.body.classList.remove("ablage");
-    if (eigenerZug || !hatDateien(e)) return;
-    e.preventDefault();
-    const d = e.dataTransfer.files && e.dataTransfer.files[0]; if (!d) return;
-    if (/png/i.test(d.type) || /\.png$/i.test(d.name)) {
-      const t = pngText(await d.arrayBuffer());
-      if (t["Formeleditor"]) { meldung(oeffnenKnopf, "Formel – bitte im Formeleditor ablegen", "⟲ Grafik öffnen …"); return; }
-      if (!t["Funktionen-Explorer"]) { meldung(oeffnenKnopf, "keine Einstellungen im Bild (von der App entfernt) – „Verlauf“ hilft", "⟲ Grafik öffnen …"); return; }
+  // ---------- Ziehen in andere Apps (iPad, Mac) und zurück
+  const ZIEH = { schluessel: null, url: null, laeuft: false };
+  let gedrueckt = false;
+  document.addEventListener("pointerdown", () => { gedrueckt = true; }, true);
+  document.addEventListener("pointerup", () => { gedrueckt = false; }, true);
+  document.addEventListener("pointercancel", () => { gedrueckt = false; }, true);
+  const explorerLink = z => location.origin + location.pathname + "#zustand=" + encodeURIComponent(JSON.stringify(z));
+  async function ziehAktualisieren() {
+    if (ZIEH.laeuft || gedrueckt || document.hidden) return;
+    let z, schluessel;
+    try { z = ex.zustand(); schluessel = JSON.stringify(z) + "|" + ex.svgDateiname; } catch { return; }
+    if (schluessel === ZIEH.schluessel) return;
+    ZIEH.laeuft = true;
+    try {
+      const png = await bildPng();
+      if (ZIEH.url) URL.revokeObjectURL(ZIEH.url);
+      ZIEH.url = URL.createObjectURL(png); ZIEH.schluessel = schluessel;
+      $("ziehBild").src = ZIEH.url;
+      $("ziehLink").href = explorerLink(z);
+      $("ziehFeld").hidden = false;
+    } catch (e) { console.warn("Ziehbild:", e); }
+    finally { ZIEH.laeuft = false; }
+  }
+  setInterval(ziehAktualisieren, 900);
+  setTimeout(ziehAktualisieren, 300);
+  $("ziehBild").addEventListener("dragstart", e => { try { e.dataTransfer.effectAllowed = "copy"; } catch {} merke(); });
+  $("ziehLink").addEventListener("dragstart", e => { try { e.dataTransfer.setData("text/plain", $("ziehLink").href); } catch {} merke(); });
+  $("ziehLink").addEventListener("click", e => { e.preventDefault(); meldung($("ziehLink"), "in die andere App ziehen", "✎ Link"); });
+
+  function zustandAusText(t) {
+    const m = /[#&]zustand=([^&\s]+)/.exec(t || "");
+    if (m) { try { return JSON.parse(decodeURIComponent(m[1])); } catch {} }
+    if (t && t.startsWith(PRAEFIX)) { try { return JSON.parse(decodeURIComponent(t.slice(PRAEFIX.length))); } catch {} }
+    return null;
+  }
+  const abwurfHinweis = $("abwurf");
+  Ziehen.abwurfzone(async ({ datei, text, url }) => {
+    let z = zustandAusText(url) || zustandAusText(text);
+    if (!z && datei) {
+      if (/\.svg$/i.test(datei.name || "") || datei.type === "image/svg+xml") {
+        const doc = new DOMParser().parseFromString(await datei.text(), "image/svg+xml");
+        const d = doc.getElementById("explorer-zustand") || doc.querySelector("desc");
+        z = d ? zustandAusText(d.textContent) : null;
+      } else if (/image|png|jpe?g|heic|tiff/i.test((datei.type || "") + (datei.name || ""))) {
+        z = zustandAusText(Ziehen.pngText(await datei.arrayBuffer())["Funktionen-Explorer"] || "");
+        if (!z) { const e = Ziehen.suche(await Ziehen.fingerabdruck(datei), verlauf().filter(e => e.fp)); if (e) z = e.z; }
+      }
     }
-    oeffneDatei(d);
-  });
+    if (!z) { meldung(oeffnenKnopf, "kein Graph aus diesem Explorer", "⟲ Grafik öffnen …"); return; }
+    ex.setzeZustand(z);
+    meldung(oeffnenKnopf, "✓ Graph wieder geöffnet", "⟲ Grafik öffnen …");
+  }, abwurfHinweis);
+  function ladeAusAdresse() {
+    const z = zustandAusText(location.hash);
+    if (!z) return;
+    try { ex.setzeZustand(z); } catch (e) { console.warn(e); }
+    history.replaceState(null, "", location.pathname + location.search);
+  }
+  window.addEventListener("hashchange", ladeAusAdresse);
+  setTimeout(() => { if (/[#&]zustand=/.test(location.hash)) history.replaceState(null, "", location.pathname + location.search); }, 1500);
 
   if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("../sw.js").catch(() => {});
-  window.explorerIWork = { oeffneDatei, bildPng, pngText, svgZuPng, verlauf, merke };
+  window.explorerIWork = { bildPng, pngText, svgZuPng, verlauf, merke, ziehAktualisieren, ZIEH };
 })();
 </script>
 

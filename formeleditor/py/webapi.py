@@ -4,7 +4,6 @@ Wird vom lokalen Server (Mac-Programm) und von Pyodide (Browser, iPad) gleicherm
     ruf(pfad, daten) → Antwort-dict   bzw.   ruf_json(pfad, json_text) → json_text
 """
 import json
-import re
 import sys
 
 from .sprache import parse, SprachFehler, definierte_namen
@@ -61,24 +60,18 @@ def berechne_zeilen(zeilen, index):
 _IWORK_ERSATZ = [
     (r"\coloneqq", r"\mathrel{:=}"),    # mathtools-Befehl, im iWork-Gleichungseditor nicht sicher vorhanden
 ]
-# iWork kennt \operatorname nicht und lehnt Umlaute in \mathrm ab → \mathrm mit \ddot (in Pages getestet)
-_IWORK_UMLAUTE = {"ä": r"\ddot{a}", "ö": r"\ddot{o}", "ü": r"\ddot{u}",
-                  "Ä": r"\ddot{A}", "Ö": r"\ddot{O}", "Ü": r"\ddot{U}", "ß": r"\text{ß}"}
-
-
-def _iwork_operator(m):
-    return r"\mathrm{" + "".join(_IWORK_UMLAUTE.get(c, c) for c in m.group(1)) + "}"
 
 
 def iwork_latex(latex, quelle=None):
     """LaTeX für „Einfügen → Gleichung“ in Pages/Keynote/Numbers.
-    Pages zeigt %-Kommentare sichtbar an (getestet) → keine Quelle anhängen; „Aus iWork laden“
-    findet die Gleichung über den Verlauf des Formeleditors wieder."""
+    Die Quelle des Editors reist als LaTeX-Kommentar in der letzten Zeile mit (unsichtbar im Satz)."""
     import urllib.parse
     for alt, neu in _IWORK_ERSATZ:
         latex = latex.replace(alt, neu)
-    latex = re.sub(r"\\operatorname\{([^{}]*)\}", _iwork_operator, latex)
     latex = " ".join(latex.split())
+    if quelle is not None:
+        kodiert = urllib.parse.quote(json.dumps(quelle, ensure_ascii=False, separators=(",", ":")), safe="")
+        latex += "\n" + IWORK_PRAEFIX + kodiert
     return latex
 
 
